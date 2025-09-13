@@ -1,40 +1,68 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-// Desafio Batalha Naval - MateCheck
-// Este código inicial serve como base para o desenvolvimento do sistema de Batalha Naval.
-// Siga os comentários para implementar cada parte do desafio.
+#define N 10          // tamanho do tabuleiro (NxN)
+#define SHIP 3        // valor que representa navio no tabuleiro
+#define SHIP_SIZE 3   // tamanho fixo dos navios
 
-int main() {
-    // Nível Novato - Posicionamento dos Navios
-    // Sugestão: Declare uma matriz bidimensional para representar o tabuleiro (Ex: int tabuleiro[5][5];).
-    // Sugestão: Posicione dois navios no tabuleiro, um verticalmente e outro horizontalmente.
-    // Sugestão: Utilize `printf` para exibir as coordenadas de cada parte dos navios.
+/* ---- utilitário: imprime a matriz do tabuleiro ---- */
+void printBoard(int board[N][N]) {
+    printf("\n=== TABULEIRO (0=agua, 3=navio) ===\n\n   ");
+    for (int c = 0; c < N; c++) printf("%d ", c);
+    printf("\n");
+    for (int r = 0; r < N; r++) {
+        printf("%2d ", r);
+        for (int c = 0; c < N; c++) printf("%d ", board[r][c]);
+        printf("\n");
+    }
+}
 
-    // Nível Aventureiro - Expansão do Tabuleiro e Posicionamento Diagonal
-    // Sugestão: Expanda o tabuleiro para uma matriz 10x10.
-    // Sugestão: Posicione quatro navios no tabuleiro, incluindo dois na diagonal.
-    // Sugestão: Exiba o tabuleiro completo no console, mostrando 0 para posições vazias e 3 para posições ocupadas.
+/* ---- validações de limites ---- */
+bool fitsHorizontal(int row, int col) { return row >= 0 && row < N && col >= 0 && col + SHIP_SIZE - 1 < N; }
+bool fitsVertical  (int row, int col) { return col >= 0 && col < N && row >= 0 && row + SHIP_SIZE - 1 < N; }
 
-    // Nível Mestre - Habilidades Especiais com Matrizes
-    // Sugestão: Crie matrizes para representar habilidades especiais como cone, cruz, e octaedro.
-    // Sugestão: Utilize estruturas de repetição aninhadas para preencher as áreas afetadas por essas habilidades no tabuleiro.
-    // Sugestão: Exiba o tabuleiro com as áreas afetadas, utilizando 0 para áreas não afetadas e 1 para áreas atingidas.
+/* ---- validação de sobreposição ---- */
+bool freeHorizontal(int b[N][N], int row, int col) { for (int c = col; c < col + SHIP_SIZE; c++) if (b[row][c] != 0) return false; return true; }
+bool freeVertical  (int b[N][N], int row, int col) { for (int r = row; r < row + SHIP_SIZE; r++) if (b[r][col] != 0) return false; return true; }
 
-    // Exemplos de exibição das habilidades:
-    // Exemplo para habilidade em cone:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 1 1 1 1 1
-    
-    // Exemplo para habilidade em octaedro:
-    // 0 0 1 0 0
-    // 0 1 1 1 0
-    // 0 0 1 0 0
+/* ---- posicionadores ---- */
+bool placeHorizontal(int b[N][N], int row, int col) {
+    if (!fitsHorizontal(row, col)) { printf("ERRO: H fora dos limites em (%d,%d)\n", row, col); return false; }
+    if (!freeHorizontal(b, row, col)) { printf("ERRO: H sobreposto em (%d,%d)\n", row, col); return false; }
+    printf("Navio H em: ");
+    for (int c = col; c < col + SHIP_SIZE; c++) { b[row][c] = SHIP; printf("(%d,%d) ", row, c); }
+    printf("\n"); return true;
+}
 
-    // Exemplo para habilidade em cruz:
-    // 0 0 1 0 0
-    // 1 1 1 1 1
-    // 0 0 1 0 0
+bool placeVertical(int b[N][N], int row, int col) {
+    if (!fitsVertical(row, col)) { printf("ERRO: V fora dos limites em (%d,%d)\n", row, col); return false; }
+    if (!freeVertical(b, row, col)) { printf("ERRO: V sobreposto em (%d,%d)\n", row, col); return false; }
+    printf("Navio V em: ");
+    for (int r = row; r < row + SHIP_SIZE; r++) { b[r][col] = SHIP; printf("(%d,%d) ", r, col); }
+    printf("\n"); return true;
+}
+
+int main(void) {
+    /* 1) Tabuleiro: toda água (0) */
+    int board[N][N] = {0};
+
+    /* 2) “modelos” dos navios (didático) */
+    int navioH[SHIP_SIZE] = {SHIP, SHIP, SHIP};
+    int navioV[SHIP_SIZE] = {SHIP, SHIP, SHIP};
+    (void)navioH; (void)navioV; // só para evitar warning
+
+    /* 3) Coordenadas iniciais (definidas no código) */
+    int hRow = 2, hCol = 1; // horizontal ocupará (2,1)(2,2)(2,3)
+    int vRow = 5, vCol = 7; // vertical   ocupará (5,7)(6,7)(7,7)
+
+    /* 4) Posicionamento com validação */
+    printf("=== Posicionamento dos Navios ===\n");
+    bool okH = placeHorizontal(board, hRow, hCol);
+    bool okV = placeVertical  (board, vRow, vCol);
+
+    /* 5) Exibição do tabuleiro */
+    if (okH && okV) printBoard(board);
+    else printf("\nCoordenadas invalidas: ajuste e execute novamente.\n");
 
     return 0;
 }
